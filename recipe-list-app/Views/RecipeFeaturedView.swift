@@ -11,6 +11,7 @@ struct RecipeFeaturedView: View {
     
     @EnvironmentObject var model: RecipeModel
     @State var isDetailViewShowing = false
+    @State var tabSelectionIndex = 0
     
     var body: some View {
         
@@ -20,11 +21,11 @@ struct RecipeFeaturedView: View {
                 .fontWeight(.bold)
                 .padding(.leading)
                 .padding(.top, 40)
-                .font(.largeTitle)
+                .font(Font.custom("Avenir Heavy", size: 30))
             
             GeometryReader { geo in
             
-            TabView {
+                TabView (selection: $tabSelectionIndex) {
                 
                 // loop through each recipe
                 ForEach (0..<model.recipes.count) { index in
@@ -34,9 +35,9 @@ struct RecipeFeaturedView: View {
                         
                         // Recipe card Button
                         Button {
-                            
                             // show recipe detail view sheet
                             self.isDetailViewShowing = true
+                            
                         } label: {
                             // Recipe card
                             ZStack {
@@ -50,9 +51,11 @@ struct RecipeFeaturedView: View {
                                         .clipped()
                                     Text(model.recipes[index].name)
                                         .padding(5)
+                                        .font(Font.custom("Avenir", size: 16))
                                 }
                             }
                         }
+                        .tag(index)
                         .sheet(isPresented: $isDetailViewShowing) {
                             // Show the RecipeDetailView
                             RecipeDetailView(recipe: model.recipes[index])
@@ -73,15 +76,44 @@ struct RecipeFeaturedView: View {
         }
             
             VStack(alignment: .leading, spacing: 10) {
-                Text("Preparation Time:")
-                    .font(.headline)
-                Text("1 hour")
+                Text("Preparation Time")
+                    .font(Font.custom("Avenir Heavy", size: 18))
+                Text(model.recipes[tabSelectionIndex].prepTime)
+                    .foregroundColor(Color.white)
+                    .padding(4)
+                    .background(.gray)
+                    .cornerRadius(7)
+                    .font(Font.custom("Avenir", size: 16))
+                    
+                    
                 Text("Highlights")
-                    .font(.headline)
-                Text("Healthy, Hearty")
+                    .font(Font.custom("Avenir Heavy", size: 18))
+                HStack {
+                    ForEach (model.recipes[tabSelectionIndex].highlights, id: \.self) { item in
+                        
+                            Text(item)
+                                .foregroundColor(Color.white)
+                                .padding(4)
+                                .background(.gray)
+                                .cornerRadius(7)
+                                .font(Font.custom("Avenir", size: 16))
+                        
+                    }
+                }
             }
             .padding([.leading, .bottom])
         }
+        .onAppear {
+            setFeaturedIndex()
+        }
+    }
+    
+    func setFeaturedIndex() {
+        var index = model.recipes.firstIndex { recipe in
+            return recipe.featured
+        }
+        
+        tabSelectionIndex = index ?? 0
     }
 }
 
